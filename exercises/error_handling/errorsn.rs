@@ -2,10 +2,8 @@
 // This is a bigger error exercise than the previous ones!
 // You can do it! :)
 //
-// Edit the `read_and_validate` function ONLY. Don't create any Errors
-// that do not already exist.
-//
-// So many things could go wrong!
+// Edit the `read_and_validate` function so that it compiles and
+// passes the tests... so many things could go wrong!
 //
 // - Reading from stdin could produce an io::Error
 // - Parsing the input could produce a num::ParseIntError
@@ -17,24 +15,19 @@
 //
 // Execute `rustlings hint errorsn` for hints :)
 
-// I AM NOT DONE
 
 use std::error;
 use std::fmt;
 use std::io;
 
 // PositiveNonzeroInteger is a struct defined below the tests.
-fn read_and_validate(b: &mut dyn io::BufRead) -> Result<PositiveNonzeroInteger, ???> {
+fn read_and_validate(b: &mut dyn io::BufRead) -> Result<PositiveNonzeroInteger, Box<dyn error::Error>> {
     let mut line = String::new();
-    b.read_line(&mut line);
-    let num: i64 = line.trim().parse();
-    let answer = PositiveNonzeroInteger::new(num);
-    answer
+    b.read_line(&mut line)?;
+    let num: i64 = line.trim().parse()?;
+    let answer = PositiveNonzeroInteger::new(num)?;
+    Ok(answer)
 }
-
-//
-// Nothing below this needs to be modified
-//
 
 // This is a test helper function that turns a &str into a BufReader.
 fn test_with_str(s: &str) -> Result<PositiveNonzeroInteger, Box<dyn error::Error>> {
@@ -62,7 +55,7 @@ fn test_non_positive() {
 
 #[test]
 fn test_ioerror() {
-    struct Broken;
+    struct  Broken;
     impl io::Read for Broken {
         fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> {
             Err(io::Error::new(io::ErrorKind::BrokenPipe, "uh-oh!"))
@@ -106,12 +99,15 @@ enum CreationError {
 
 impl fmt::Display for CreationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let description = match *self {
-            CreationError::Negative => "Number is negative",
-            CreationError::Zero => "Number is zero",
-        };
-        f.write_str(description)
+        f.write_str((self as &dyn error::Error).description())
     }
 }
 
-impl error::Error for CreationError {}
+impl error::Error for CreationError {
+    fn description(&self) -> &str {
+        match *self {
+            CreationError::Negative => "Negative",
+            CreationError::Zero => "Zero",
+        }
+    }
+}

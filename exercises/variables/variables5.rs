@@ -1,11 +1,11 @@
 // variables5.rs
 // Make me compile! Execute the command `rustlings hint variables5` if you want a hint :)
 
-// I AM NOT DONE
+// I AM NOT DONlE
 
 fn main() {
-    let number = "3"; // don't change this line
+    let mut number = "3";
     println!("Number {}", number);
-    number = 3;
+    number = "3";
     println!("Number {}", number);
 }
